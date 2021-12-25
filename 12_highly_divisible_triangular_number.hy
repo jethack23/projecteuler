@@ -1,33 +1,46 @@
 (import time
-        [collections [defaultdict]])
-(require [hy.contrib.loop [loop]])
+        [collections [defaultdict]]
+        [hy.contrib.loop [__trampoline__]])
 
-(defn is-prime? [n all-p-below]
+(defn prime? [n all-p-below]
   (for [p all-p-below]
     (cond [(> (* p p) n) (break)]
           [(= 0 (% n p)) (return False)]))
   True)
 
-(defn prime-update [n [primes None]]
-  (if (is primes None)
-      (setv primes [2 3]))
-  (setv i (+ (get primes -1) 2))
-  (while (<= (* i i) n)
-    (if (is-prime? i primes)
-        (primes.append i))
-    (+= i 2))
-  primes)
+;; ;;; while version
+;; (defn prime-update [n [primes None]]
+;;   (if (is primes None)
+;;       (setv primes [2 3]))
+;;   (setv i (+ (get primes -1) 2))
+;;   (while (<= (* i i) n)
+;;     (if (prime? i primes)
+;;         (primes.append i))
+;;     (+= i 2))
+;;   primes)
 
-;; ;;; exactly same behavior but slow. don't use loop/recur. make sol 500 times slower
+;; ;;; exactly same behavior but slow. don't use loop/recur. make sol 500 times slower than while-version
 ;; (defn prime-update [n [primes None]]
 ;;   (if (is primes None)
 ;;       (setv primes [2 3]))
 ;;   (loop [[i (+ (get primes -1) 2)]]
 ;;         (if (> (* i i) n)
-;;             primes
-;;             (do (if (is-prime? i primes)
-;;                     (primes.append i))
-;;                 (recur (+ i 2))))))
+;;             (return primes))
+;;         (do (if (prime? i primes)
+;;                 (primes.append i))
+;;             (recur (+ i 2)))))
+
+;;; trampoline decorator version. I prefer this.
+(defn prime-update [n [primes None]]
+  (if (is primes None)
+      (setv primes [2 3]))
+  (with-decorator __trampoline__
+    (defn recur [i]
+      (if (> (* i i) n) (return primes))
+      (if (prime? i primes) (primes.append i))
+      (recur (+ i 2))))
+  (recur (+ (get primes -1) 2)))
+
 
 (defn exponents [n primes]
   (setv ret (defaultdict int))
@@ -61,5 +74,5 @@
   (* a b))
 
 (setv t (time.time))
-(sol 500)
+(print (sol 2000))
 (print (- (time.time) t))
