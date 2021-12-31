@@ -13,7 +13,7 @@
            (when (in l lengths)
              ~@body)
            (when d
-             (for [c candidates]
+             (for [c (list candidates)]
                (perm.append c)
                (candidates.remove c)
                (setv ret (~g!recur perm terminate ~@argsymbols (+ l 1) (- d 1)))
