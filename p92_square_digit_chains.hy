@@ -1,3 +1,4 @@
+;;; hy==1.0a4
 ;;; Cpython 27s, pypy 800ms
 
 (defn tco [f]
@@ -16,8 +17,8 @@
       (setv active False)
       result)))
 
-(import [functools [lru_cache]]
-        [time [time]])
+(import functools [lru_cache]
+        time [time])
 
 (defn square-digit-sum [n]
   (setv rst 0)
