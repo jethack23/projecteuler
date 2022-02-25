@@ -1,3 +1,5 @@
+;;; hy==1.0a4
+
 (import time [time])
 
 (defn main []
