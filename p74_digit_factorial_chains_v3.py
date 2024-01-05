@@ -1,4 +1,4 @@
-# 1.098998785018921
+# elapsed: 0.7229983806610107
 def factorial(n):
     if n < 2:
         return 1
@@ -9,21 +9,26 @@ def factorial(n):
 digit_factorials = list(map(factorial, range(10)))
 
 
+def canonicalize(n):
+    return int("".join(sorted(list(str(n)), reverse=True)))
+
+
 def solution(M):
     mem = {}
     rst = 0
 
-    def chain_length(n):
+    def chain(n):
         lst = []
         rst = 0
         while not n in mem and (not n in lst):
             rst += 1
             lst.append(n)
-            n = sum(map(lambda x: digit_factorials[int(x)], str(n)))
+            n = canonicalize(sum(map(lambda x: digit_factorials[int(x)], str(n))))
         return [lst, n]
 
     for i in range(M):
-        [lst, n] = chain_length(i)
+        i = canonicalize(i)
+        [lst, n] = chain(i)
         if n in mem:
             l = mem[n]
             while lst:
@@ -59,7 +64,10 @@ main()
 
 # translated from below s-expression
 
-# version : 0.1.8
+# ;;; from version 0.1.9
+# (defmacro fn [*x]
+#   (return `(lambda ~@x)))
+#
 # (def factorial [n]
 #   (if (< n 2)
 #       (return 1)
@@ -67,20 +75,24 @@ main()
 #
 # (= digit-factorials (list (map factorial (range 10))))
 #
+# (def canonicalize [n]
+#   (return (int (.join "" (sorted (list (str n)) :reverse True)))))
+#
 # (def solution [M]
 #   (= mem {})
 #   (= rst 0)
-#   (def chain-length [n]
+#   (def chain [n]
 #     (= lst [])
 #     (= rst 0)
 #     (while (and (not (in n mem))
 #                 (not (in n lst)))
 #       (+= rst 1)
 #       (lst.append n)
-#       (= n (sum (map (lambda [x] (sub digit-factorials (int x))) (str n)))))
+#       (= n (canonicalize (sum (map (fn [x] (sub digit-factorials (int x))) (str n))))))
 #     (return [lst n]))
 #   (for i (range M)
-#     (= [lst n] (chain-length i))
+#     (= i (canonicalize i))
+#     (= [lst n] (chain i))
 #     (if (in n mem)
 #         (do (= l (sub mem n))
 #             (while lst

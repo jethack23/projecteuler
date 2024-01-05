@@ -1,3 +1,4 @@
+# elapsed: 18.23354959487915
 def factorial(n):
     if n < 2:
         return 1
