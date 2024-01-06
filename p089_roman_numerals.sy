@@ -1,0 +1,120 @@
+;;; version 0.2.1
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (= [test then *orelse] body)
+    (if (< (len body) 4)
+        (return `(if ~test ~then ~@orelse))
+        (return `(if ~test ~then ~(recur *orelse)))))
+  (return (recur *body)))
+
+(def read-roman [s]
+  (= i 0)
+  (= rst 0)
+  ;; 1000
+  (while (== (sub s [: i (+ i 1)]) "M")
+    (+= rst 1000)
+    (+= i 1))
+  ;; 100
+  (if (== (sub s [: i (+ i 2)]) "CM")
+      (do (+= rst 900)
+          (+= i 2)))
+  (if (== (sub s [: i (+ i 1)]) "D")
+      (do (+= rst 500)
+          (+= i 1)))
+  (if (== (sub s [: i (+ i 2)]) "CD")
+      (do (+= rst 400)
+          (+= i 2)))
+  (while (== (sub s [: i (+ i 1)]) "C")
+    (+= rst 100)
+    (+= i 1))
+  ;; 10
+  (if (== (sub s [: i (+ i 2)]) "XC")
+      (do (+= rst 90)
+          (+= i 2)))
+  (if (== (sub s [: i (+ i 1)]) "L")
+      (do (+= rst 50)
+          (+= i 1)))
+  (if (== (sub s [: i (+ i 2)]) "XL")
+      (do (+= rst 40)
+          (+= i 2)))
+  (while (== (sub s [: i (+ i 1)]) "X")
+    (+= rst 10)
+    (+= i 1))
+  ;; 1
+  (if (== (sub s [: i (+ i 2)]) "IX")
+      (do (+= rst 9)
+          (+= i 2)))
+  (if (== (sub s [: i (+ i 1)]) "V")
+      (do (+= rst 5)
+          (+= i 1)))
+  (if (== (sub s [: i (+ i 2)]) "IV")
+      (do (+= rst 4)
+          (+= i 2)))
+  (while (== (sub s [: i (+ i 1)]) "I")
+    (+= rst 1)
+    (+= i 1))
+  (return rst))
+
+(def minimal-roman [n]
+  (= rst [])
+  (while n
+    (cond (:= m (// n 1000)) (do (+= rst (* ["M"] m))
+                                 (%= n 1000))
+
+          (== (:= c (// n 100)) 9) (do (rst.append "CM")
+                                       (%= n 100))
+
+          (>= c 5) (do (rst.append "D")
+                       (-= n 500))
+
+          (>= c 4) (do (rst.append "CD")
+                       (-= n 400))
+
+          c (do (+= rst (* ["C"] c))
+                (%= n 100))
+
+          (== (:= x (// n 10)) 9) (do (rst.append "XC")
+                                      (%= n 10))
+
+          (>= x 5) (do (rst.append "L")
+                       (-= n 50))
+
+          (>= x 4) (do (rst.append "XL")
+                       (-= n 40))
+
+          x (do (+= rst (* ["X"] x))
+                (%= n 10))
+
+          (== n 9) (do (rst.append "IX")
+                       (= n 0))
+
+          (>= n 5) (do (rst.append "V")
+                       (-= n 5))
+
+          (>= n 4) (do (rst.append "IV")
+                       (-= n 4))
+
+          (do (+= rst (* ["I"] n))
+              (= n 0))))
+  (return (.join "" rst)))
+
+(def solution [fname]
+  (with [(open fname "r") as f]
+    (= romans (map (fn [x] (x.strip)) (f.readlines))))
+  (= rst 0)
+  (for r romans
+    (+= rst (- (len r) (len (minimal-roman (read-roman r))))))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler "./p089_roman.txt")
