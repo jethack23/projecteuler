@@ -1,0 +1,33 @@
+;;; version 0.2.1
+(from math [sqrt])
+
+(def parse-line [line]
+  (return (map int (line.split ","))))
+
+(def solution [fname]
+  (with [(open fname "r") as f]
+    (= lines (zip *(map parse-line (f.readlines)))))
+  (= last-psum (* [0] 80))
+  (for line lines
+    (= down (list (map sum (zip last-psum line))))
+    (= right [*down])
+    (= left [*down])
+    (for i (range 79)
+      (if (< (:= rightmove (+ (sub right i) (sub line (+ i 1))))
+             (sub right (+ i 1)))
+          (= (sub right (+ i 1)) rightmove)))
+    (for i (range 79 0 -1)
+      (if (< (:= leftmove (+ (sub left i) (sub line (- i 1))))
+             (sub left (- i 1)))
+          (= (sub left (- i 1)) leftmove)))
+    (= last-psum (list (map min (zip down right left)))))
+  (return (min last-psum)))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler "p082_matrix.txt")
