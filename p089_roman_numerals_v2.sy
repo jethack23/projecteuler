@@ -1,0 +1,73 @@
+;;; version 0.2.1
+
+;;; slower but better readibility
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (= [test then *orelse] body)
+    (if (< (len body) 4)
+        (return `(if ~test ~then ~@orelse))
+        (return `(if ~test ~then ~(recur *orelse)))))
+  (return (recur *body)))
+
+(= rom-priority [["CM" 900]
+                 ["M" 1000]
+                 ["CD" 400]
+                 ["D" 500]
+                 ["XC" 90]
+                 ["C" 100]
+                 ["XL" 40]
+                 ["L" 50]
+                 ["IX" 9]
+                 ["X" 10]
+                 ["IV" 4]
+                 ["V" 5]
+                 ["I" 1]])
+
+(def read-roman [s]
+  (= rst 0)
+  (for [c m] rom-priority
+    (+= rst (* m (s.count c)))
+    (= s (s.replace c "")))
+  (return rst))
+
+(= num-priority [["M" 1000]
+                 ["CM" 900]
+                 ["D" 500]
+                 ["CD" 400]
+                 ["C" 100]
+                 ["XC" 90]
+                 ["L" 50]
+                 ["XL" 40]
+                 ["X" 10]
+                 ["IX" 9]
+                 ["V" 5]
+                 ["IV" 4]
+                 ["I" 1]])
+
+(def minimal-roman [n]
+  (= rst [])
+  (for [c m] num-priority
+    (+= rst (* [c] (// n m)))
+    (%= n m))
+  (return (.join "" rst)))
+
+(def solution [fname]
+  (with [(open fname "r") as f]
+    (= romans (map (fn [x] (x.strip)) (f.readlines))))
+  (= rst 0)
+  (for r romans
+    (+= rst (- (len r) (len (minimal-roman (read-roman r))))))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler "./p089_roman.txt")
