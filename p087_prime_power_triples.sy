@@ -1,0 +1,46 @@
+;;; version 0.2.1
+
+(from math [sqrt])
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (= [test then *orelse] body)
+    (if (< (len body) 4)
+        (return `(if ~test ~then ~@orelse))
+        (return `(if ~test ~then ~(recur *orelse)))))
+  (return (recur *body)))
+
+(def get-primes [n]
+  (= rst (+ [0 0]
+            (* [1] (int (sqrt n)))))
+  (for i (range 2 (len rst))
+    (if (sub rst i)
+        (for j (range (* 2 i) (len rst) i)
+          (= (sub rst j) 0))))
+  (return [p for [p c] in (enumerate rst) if c]))
+
+(def solution [n]
+  (= primes (get-primes n))
+  (= squares (list (map (fn [x] (* x x)) primes)))
+  (= cubes (list (map (fn [x] (* x x x)) primes)))
+  (= quads (list (map (fn [x] (* x x x x)) primes)))
+  (= rst (set))
+  (for s squares
+    (for c cubes
+      (for q quads
+        (if (> (:= t (+ s c q)) n)
+            (break))
+        (rst.add t))))
+  (return (len rst)))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler 50000000)
