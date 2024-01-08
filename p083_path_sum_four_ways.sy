@@ -1,0 +1,40 @@
+;;; version 0.2.3
+
+(def read-matrix [filename]
+  (with [(open filename "r") as f]
+    (= lines (f.readlines)))
+  (return [(list (map int (.split (.strip line) ","))) for line in lines]))
+
+(def solution [filename]
+  (= mat (read-matrix filename))
+  (= l (len mat))
+  (def safety-sub [m i j]
+    (return (sub m
+                 (min (- l 1) (max i 0))
+                 (min (- l 1) (max j 0)))))
+
+  (= mem [(* [(float "inf")] l) for _ in (range l)])
+  (= (sub mem 0 0) (sub mat 0 0))
+  (= changed True)
+  (while changed
+    (= changed False)
+    (for i (range l)
+      (for j (range l)
+        (if (< (:= mv (+ (sub mat i j) (min (safety-sub mem (- i 1) j)
+                                            (safety-sub mem (+ i 1) j)
+                                            (safety-sub mem i (+ j 1))
+                                            (safety-sub mem i (- j 1)))))
+               (sub mem i j))
+            (do (= changed True)
+                (= (sub mem i j) mv))))))
+  (return (sub mem -1 -1)))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+
+(euler "./p083_matrix.txt")
