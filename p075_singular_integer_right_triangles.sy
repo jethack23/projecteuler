@@ -1,0 +1,38 @@
+;;; version 0.2.3
+(from math [sqrt])
+
+(def gcd [m n]
+  (return (ife (% m n) (gcd n (% m n)) n)))
+
+(def solution [l]
+  (= primitive (set))
+  (= multi-primitive (set))
+  (= rst 0)
+  (for n (range 1 l)
+    (for m (range (+ n 1) l 2)
+      (if (!= (gcd m n) 1) (continue))
+      (= t (* 2 m (+ m n)))
+      (if (> t l)
+          (break)
+          (if (in t primitive)
+              (multi-primitive.add t)
+              (primitive.add t)))))
+  (= sieve (* [0] (+ l 1)))
+  (for p primitive
+    (for t (range p (+ l 1) p)
+      (+= (sub sieve t) 1)))
+  (for [i n] (enumerate sieve)
+    (if (and (not (in i multi-primitive))
+             (== n 1))
+        (+= rst 1)))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+
+(euler 1_500_000)
