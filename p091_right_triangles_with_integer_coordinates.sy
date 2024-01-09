@@ -1,0 +1,30 @@
+;;; version 0.2.3
+(from math [sqrt])
+
+(def distsquare [x1 y1 x2 y2]
+  (return (+ (** (- x2 x1) 2) (** (- y2 y1) 2))))
+
+(def solution [M]
+  (+= M 1)
+  (= rst 0)
+  (for x1 (range 0 M)
+    (for y1 (range 0 M)
+      (for x2 (range x1 M)
+        (for y2 (range (ife (== x1 x2) (+ y1 1) 0) M)
+          (= a (distsquare x1 y1 x2 y2))
+          (= b (distsquare 0 0 x1 y1))
+          (= c (distsquare 0 0 x2 y2))
+          (= [a b c] (sorted [a b c]))
+          (if (and (!= a 0)
+                   (== (+ a b) c))
+              (+= rst 1))))))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler 50)
