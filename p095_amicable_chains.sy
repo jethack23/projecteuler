@@ -1,0 +1,79 @@
+;;; version 0.2.3
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (= [test then *orelse] body)
+    (if (< (len body) 4)
+        (return `(if ~test ~then ~@orelse))
+        (return `(if ~test ~then ~(recur *orelse)))))
+  (return (recur *body)))
+
+(from collections [Counter])
+
+(def primes [n]
+  (= rst (+ [0 0]
+            (* [1] n)))
+  (for [i pp] (enumerate rst)
+    (if pp
+        (for j (range (* 2 i) (+ n 1) i)
+          (= (sub rst j) 0))))
+  (return [i for [i p] in (enumerate rst) if p]))
+
+(def factor-sum [factors :f 1]
+  (if (not factors)
+      (return f)
+      (do (= [p n] (factors.pop))
+          (= rst 0)
+          (= this-p 1)
+          (for i (range (+ n 1))
+            (+= rst (factor-sum factors (* f this-p)))
+            (*= this-p p))
+          (factors.append [p n])
+          (return rst))))
+
+(def solution [n]
+  (= ps (primes n))
+  (= met (set))
+  
+  (def prime-factors [n]
+    (= rst (Counter))
+    (for p ps
+      (if (> p n)
+          (break))
+      (while (== (% n p) 0)
+        (+= (sub rst p) 1)
+        (//= n p)))
+    (return (list (rst.items))))
+
+  (= mem 0)
+  (= rst 0)
+
+  (for i (range 2 (+ n 1))
+    (if (in i met) (continue))
+    (met.add i)
+    (= ami-chain [i])
+    (= t i)
+    (while (and (<= (:= t (- (factor-sum (prime-factors t)) t)) n)
+                (!= t 1)
+                (not (in t met))
+                (not (in t ami-chain)))
+      (ami-chain.append t)
+      (met.add t))
+    (if (in t ami-chain)
+        (do (= pos (ami-chain.index t))
+            (if (> (- (len ami-chain) pos) mem)
+                (do (= mem (- (len ami-chain) pos))
+                    (= rst (min (sub ami-chain [: pos _]))))))))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler 1_000_000)
