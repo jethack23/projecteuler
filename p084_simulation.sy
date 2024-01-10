@@ -1,0 +1,107 @@
+;;; version 0.2.3
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(if ~@body))
+        (do (= [test then *orelse] body)
+            (return `(if ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro conde [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(ife ~@body))
+        (do (= [test then *orelse] body)
+            (return `(ife ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(from functools [reduce])
+(from random [randint])
+
+(def cc-next [pos]
+  (= c (randint 0 15))
+  (return (conde (< c 14)
+                 pos
+
+                 (== c 14)
+                 0
+
+                 10)))
+
+(def ch-next [pos]
+  (= c (randint 0 15))
+  (= nr (conde (== pos 7)
+               15
+               (== pos 22)
+               25
+               5))
+  (= nu (conde (== pos 7)
+               12
+               (== pos 22)
+               28
+               12))
+  (return (conde (< c 6)
+                 pos
+                 (== c 6)
+                 0
+                 (== c 7)
+                 10
+                 (== c 8)
+                 11
+                 (== c 9)
+                 24
+                 (== c 10)
+                 39
+                 (== c 11)
+                 5
+                 (< c 14)
+                 nr
+                 (== c 14)
+                 nu
+                 (- pos 3))))
+
+(def solution [n steps]
+  (= board (+ [1] (* [0] 39)))
+  (= ccs {, 2 17 33})
+  (= chs {, 7 22 36})
+  (= pos 0)
+  (= consec 0)
+  (for _ (range steps)
+    (= d1 (randint 1 n))
+    (= d2 (randint 1 n))
+    (if (== d1 d2)
+        (+= consec 1)
+        (= consec 0))
+    (if (== consec 3)
+        (do (= pos 10))
+        (do (= pos (% (+ pos d1 d2) 40))
+            (cond (== pos 30)
+                  (= pos 10)
+                  
+                  (in pos ccs)
+                  (= pos (cc-next pos))
+
+                  (in pos chs)
+                  (= pos (ch-next pos)))))
+    (if (== pos 10) (== consec 0))
+    (+= (sub board pos) 1))
+  (= s (sum board))
+  (= board (map (fn [x] (/ x s)) board))
+  (return (sub (sorted (enumerate board)
+                       :key (fn [x] (sub x 1))
+                       :reverse True)
+               [: _ 3])))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+
+(euler 4 1_000_000_0)

@@ -1,0 +1,131 @@
+;;; version 0.2.3
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(if ~@body))
+        (do (= [test then *orelse] body)
+            (return `(if ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro conde [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(ife ~@body))
+        (do (= [test then *orelse] body)
+            (return `(ife ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(from functools [reduce])
+
+(def cc-next [pos]
+  (return [[pos (/ 14 16)]
+           [0 (/ 1 16)]
+           [10 (/ 1 16)]]))
+
+(def ch-next [pos]
+  (= nr (conde (== pos 7)
+               15
+               (== pos 22)
+               25
+               5))
+  (= nu (conde (== pos 7)
+               12
+               (== pos 22)
+               28
+               12))
+  (return [[pos (/ 6 16)]
+           [0 (/ 1 16)]
+           [10 (/ 1 16)]
+           [11 (/ 1 16)]
+           [24 (/ 1 16)]
+           [39 (/ 1 16)]
+           [5 (/ 1 16)]
+           [nr (/ 2 16)]
+           [nu (/ 1 16)]
+           [(- pos 3) (/ 1 16)]]))
+
+(def solution [n]
+  (= board (+ [1] (* [0] 39)))
+  (= after-jail (* [0] 40))
+  (= after-two-jail (* [0] 40))
+  (= ccs {, 2 17 33})
+  (= chs {, 7 22 36})
+  (while True
+    (= newboard (* [0] 40))
+    (= new-after-jail (* [0] 40))
+    (= new-after-two-jail (* [0] 40))
+    (for [i ip] (enumerate board)
+      (for d1 (range 1 (+ n 1))
+        (for d2 (range 1 (+ n 1))
+          (= sp (/ 1 n n))
+          (= pos (% (+ i d1 d2) 40))
+          ;; consecutive
+          (if (== d1 d2)
+              (do (= pspeed
+                     (ife (sub board i)
+                          (+ (* (/ 5 218)
+                                (- 1
+                                   (/ (+ (sub after-jail i)
+                                         (sub after-two-jail i))
+                                      (sub board i))))
+                             (* (/ 1 36)
+                                (/ (sub after-two-jail i)
+                                   (sub board i))))
+                          0))
+                  (+= (sub newboard 10) (* ip sp pspeed))
+                  (*= sp (- 1 pspeed))))
+          (cond (== pos 30)
+                (do (+= (sub newboard 10) (* ip sp))
+                    (if (== i 10)
+                        (+= (sub new-after-jail 10) (* ip sp)))
+                    (if (sub after-jail i)
+                        (+= (sub new-after-two-jail 10)
+                            (* ip sp (sub after-jail i)))))
+                
+                (in pos ccs)
+                (for [ccl ccp] (cc-next pos)
+                  (+= (sub newboard ccl) (* ip sp ccp))
+                  (if (== i 10)
+                      (+= (sub new-after-jail ccl) (* ip sp ccp)))
+                  (if (sub after-jail i)
+                      (+= (sub new-after-two-jail ccl)
+                          (* ip sp ccp (sub after-jail i)))))
+
+                (in pos chs)
+                (for [chl chp] (ch-next pos)
+                  (+= (sub newboard chl) (* ip sp chp))
+                  (if (== i 10)
+                      (+= (sub new-after-jail ccl) (* ip sp ccp)))
+                  (if (sub after-jail i)
+                      (+= (sub new-after-two-jail chl)
+                          (* ip sp chp (sub after-jail i)))))
+
+                (do (+= (sub newboard pos) (* ip sp))
+                    (if (== i 10)
+                        (+= (sub new-after-jail pos) (* ip sp)))
+                    (if (sub after-jail i)
+                        (+= (sub new-after-two-jail pos)
+                            (* ip sp (sub after-jail i)))))))))
+    (if (== board newboard)
+        (break)
+        (do (= board newboard)
+            (= after-jail new-after-jail)
+            (= after-two-jail new-after-two-jail))))
+  (return (sub (sorted (range 40)
+                       :key (fn [x] (sub board x))
+                       :reverse True)
+               [: _ 3])))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+
+(euler 4)
