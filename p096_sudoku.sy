@@ -1,0 +1,152 @@
+;;; version: 0.2.3
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (if (< (len body) 4)
+        (return `(if ~@body))
+        (do (= [test then *orelse] body)
+            (return `(if ~test ~then ~(recur *orelse))))))
+  (return (recur *body)))
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro when [test *body]
+  (return `(if ~test (do ~@body))))
+
+(from collections [deque])
+
+(def find-contradiction [board]
+  ;; row
+  (for i (range 9)
+    (= s (set))
+    (for j (range 9)
+      (cond (isinstance (:= x (sub board i j)) set)
+            (continue)
+            
+            (in x s)
+            (return True)
+
+            (s.add x))))
+
+  ;; column
+  (for i (range 9)
+    (= s (set))
+    (for j (range 9)
+      (cond (isinstance (:= x (sub board j i)) set)
+            (continue)
+            
+            (in x s)
+            (return True)
+
+            (s.add x))))
+
+  ;; subboard
+  (for i (range 0 9 3)
+    (for j (range 0 9 3)
+      (= s (set))
+      (for k (range 3)
+        (for l (range 3)
+          (cond (isinstance (:= x (sub board (+ i k) (+ j l))) set)
+                (continue)
+
+                (in x s)
+                (return True)
+
+                (s.add x))))))
+
+  (return False))
+
+(def eliminate-and-further [board q remain]
+  (while q
+    (= [i j] (q.popleft))
+    (= n (sub board i j))
+    (for k (range 9)
+      (when (isinstance (:= st (sub board k j)) set)
+        (.discard st n)
+        (when (== (len st) 1)
+          (= m (.pop st))
+          (= (sub board k j) m)
+          (.remove remain (, k j))
+          (q.append [k j]))
+        ))
+    (for k (range 9)
+      (when (isinstance (:= st (sub board i k)) set)
+        (.discard st n)
+        (when (== (len st) 1)
+          (= m (.pop st))
+          (= (sub board i k) m)
+          (.remove remain (, i k))
+          (q.append [i k]))
+        ))
+    (for k (range (:= subi (* (// i 3) 3)) (+ subi 3))
+      (for l (range (:= subj (* (// j 3) 3)) (+ subj 3))
+        (when (isinstance (:= st (sub board k l)) set)
+          (.discard st n)
+          (when (== (len st) 1)
+            (= m (.pop st))
+            (= (sub board k l) m)
+            (.remove remain (, k l))
+            (q.append [k l]))
+          ))))
+  (if (find-contradiction board)
+      (return [False board]))
+  (if remain
+      (do (= [i j] (remain.pop))
+          (for m (sub board i j)
+            (= new-board [[(ife (isinstance n set)
+                                {, *n}
+                                n)
+                           for n in line]
+                          for line in board])
+            (= (sub new-board i j) m)
+            (= [solvable returned] (eliminate-and-further
+                                     new-board
+                                     (deque [[i j]])
+                                     {, x for x in remain}))
+            (if solvable (return [True returned]))))
+      (return [True board]))
+  (return [False board]))
+
+(def sudoku-solver [board]
+  (= q (deque))
+  (= remain (set))
+  (for i (range 9)
+    (for j (range 9)
+      (if (== (:= n (sub board i j)) 0)
+          (do (= (sub board i j) (set (range 1 10)))
+              (.add remain (, i j)))
+          (q.append [i j]))))
+  (return (eliminate-and-further board q remain)))
+
+(def parse-line [line]
+  (return [(int c) for c in line]))
+
+(def read-boards [filename]
+  (= boards [])
+  (with [(open filename "r") as f]
+    (= lines (deque (map (fn [x] (x.strip)) (f.readlines)))))
+  (while lines
+    (lines.popleft)
+    (boards.append [(parse-line (lines.popleft)) for _ in (range 9)]))
+  (return boards))
+
+(def solution [filename]
+  (= boards (read-boards filename))
+  (= rst 0)
+  (for b boards
+    (= [solved b] (sudoku-solver b))
+    (assert solved b)
+    (= [a b c *_] (sub b 0))
+    (+= rst (+ (* a 100) (* b 10) c)))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+
+(euler "./p096_sudoku.txt")
