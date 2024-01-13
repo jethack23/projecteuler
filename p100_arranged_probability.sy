@@ -1,0 +1,30 @@
+;;; version 0.2.3
+;;; used recurrence relation from https://www.alpertron.com.ar/QUAD.HTM
+;;; have to visit again and understand where the recurrence relation comes from
+
+(defmacro fn [*body]
+  (return `(lambda ~@body)))
+
+(defmacro cond [*body]
+  (def recur [*body]
+    (= [test then *orelse] body)
+    (if (< (len body) 4)
+        (return `(if ~test ~then ~@orelse))
+        (return `(if ~test ~then ~(recur *orelse)))))
+  (return (recur *body)))
+
+(def solution [n]
+  (= [x y] [1 0])
+  (while (< (+ x y) n)
+    (= [x y] [(+ (* 5 x) (* 2 y) -2)
+              (+ (* 2 x) y -1)]))
+  (return x))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (main))))
+(euler 1_000_000_000_000)
