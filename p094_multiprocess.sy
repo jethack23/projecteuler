@@ -1,0 +1,48 @@
+;;; version 0.3.0
+;;; need to run with "-m" flag in windows.
+;;; In wsl, just work fine with run command
+(from concurrent.futures [ProcessPoolExecutor
+                          as-completed])
+(from math [isqrt])
+
+(def calc [il iu]
+  (= rst 0)
+  (for i (range il iu 2)
+    (for j [(- i 1) (+ i 1)]
+      (= l (// j 2))
+      (= hsquare (- (* i i) (* l l)))
+      (if (== hsquare (** (isqrt hsquare) 2))
+          (+= rst (+ i i j)))))
+  (return rst))
+
+(def solution [limit]
+  (= rst 0)
+  (= max-workers 16)
+  (= ilimit (// limit 3))
+  (= i 3)
+  (= [q r] (divmod (- ilimit i) max-workers))
+  (= gap (ife r (+ q 1) q))
+  (if (% gap 2) (+= gap 1))
+  (= boundaries [i])
+  (for _ (range (- max-workers 1))
+    (+= i gap)
+    (boundaries.append i))
+  (boundaries.append ilimit)
+  (= bound-pairs (zip (sub boundaries [: _ -1])
+                      (sub boundaries [: 1 _])))
+  (with [(ProcessPoolExecutor :max-workers max-workers) as executor]
+    (= futures ((executor.submit calc *bound-pair) for bound-pair in bound-pairs))
+    (for future (as-completed futures)
+      (+= rst (future.result))))
+  (return rst))
+
+(defmacro euler [*inputs]
+  (return `(do (from time [time])
+               (def main []
+                 (= start (time))
+                 (print (solution ~@inputs))
+                 (print "elapsed:" (- (time) start)))
+               (if (== __name__ "__main__")
+                   (main)))))
+
+(euler 1_000_000_000)
