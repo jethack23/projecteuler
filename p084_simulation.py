@@ -58,7 +58,7 @@ def solution(n, steps):
             elif pos in chs:
                 pos = ch_next(pos)
         if pos == 10:
-            consec == 0
+            consec = 0
         board[pos] += 1
     s = sum(board)
     board = map(lambda x: x / s, board)

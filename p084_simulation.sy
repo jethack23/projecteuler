@@ -87,7 +87,8 @@
 
                   (in pos chs)
                   (= pos (ch-next pos)))))
-    (if (== pos 10) (== consec 0))
+    (if (== pos 10)
+        (= consec 0))
     (+= (sub board pos) 1))
   (= s (sum board))
   (= board (map (fn [x] (/ x s)) board))
