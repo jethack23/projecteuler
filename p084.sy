@@ -66,7 +66,7 @@
           ;; consecutive
           (if (== d1 d2)
               (do (= pspeed
-                     (ife ip
+                     (ife (and (!= i 10) (== d1 d2))
                           (+ (* (/ (- n 1) n n n)
                                 (- 1
                                    (/ (+ (sub after-jail i)
@@ -94,7 +94,7 @@
                 (+= (sub new-after-jail pos) (* ip sp pp)))
             (if (and (!= pos 10) (sub after-jail i))
                 (+= (sub new-after-two-jail pos)
-                    (* ip sp (sub after-jail i))))))))
+                    (* (sub after-jail i) sp pp)))))))
     (if (== board newboard)
         (break)
         (do (= board newboard)

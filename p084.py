@@ -45,7 +45,7 @@ def solution(n):
                             / n
                             * (1 - (after_jail[i] + after_two_jail[i]) / ip)
                             + 1 / n / n * (after_two_jail[i] / ip)
-                            if ip
+                            if i != 10 and d1 == d2
                             else 0
                         )
                         newboard[10] += ip * sp * pspeed
@@ -64,7 +64,7 @@ def solution(n):
                         if pos != 10 and i == 10:
                             new_after_jail[pos] += ip * sp * pp
                         if pos != 10 and after_jail[i]:
-                            new_after_two_jail[pos] += ip * sp * after_jail[i]
+                            new_after_two_jail[pos] += after_jail[i] * sp * pp
         if board == newboard:
             break
         else:
