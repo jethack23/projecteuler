@@ -39,40 +39,31 @@ def solution(n):
                     pos = (i + d1 + d2) % 40
                     if d1 == d2:
                         pspeed = (
-                            5
-                            / 218
-                            * (1 - (after_jail[i] + after_two_jail[i]) / board[i])
-                            + 1 / 36 * (after_two_jail[i] / board[i])
-                            if board[i]
+                            (n - 1)
+                            / n
+                            / n
+                            / n
+                            * (1 - (after_jail[i] + after_two_jail[i]) / ip)
+                            + 1 / n / n * (after_two_jail[i] / ip)
+                            if ip
                             else 0
                         )
                         newboard[10] += ip * sp * pspeed
                         sp *= 1 - pspeed
-                    if pos == 30:
-                        newboard[10] += ip * sp
-                        if i == 10:
-                            new_after_jail[10] += ip * sp
-                        if after_jail[i]:
-                            new_after_two_jail[10] += ip * sp * after_jail[i]
-                    elif pos in ccs:
-                        for [ccl, ccp] in cc_next(pos):
-                            newboard[ccl] += ip * sp * ccp
-                            if i == 10:
-                                new_after_jail[ccl] += ip * sp * ccp
-                            if after_jail[i]:
-                                new_after_two_jail[ccl] += ip * sp * ccp * after_jail[i]
-                    elif pos in chs:
-                        for [chl, chp] in ch_next(pos):
-                            newboard[chl] += ip * sp * chp
-                            if i == 10:
-                                new_after_jail[ccl] += ip * sp * ccp
-                            if after_jail[i]:
-                                new_after_two_jail[chl] += ip * sp * chp * after_jail[i]
-                    else:
-                        newboard[pos] += ip * sp
-                        if i == 10:
-                            new_after_jail[pos] += ip * sp
-                        if after_jail[i]:
+                    next_pos = (
+                        [[10, 1]]
+                        if pos == 30
+                        else cc_next(pos)
+                        if pos in ccs
+                        else ch_next(pos)
+                        if pos in chs
+                        else [[pos, 1]]
+                    )
+                    for [pos, pp] in next_pos:
+                        newboard[pos] += ip * sp * pp
+                        if pos != 10 and i == 10:
+                            new_after_jail[pos] += ip * sp * pp
+                        if pos != 10 and after_jail[i]:
                             new_after_two_jail[pos] += ip * sp * after_jail[i]
         if board == newboard:
             break
@@ -80,7 +71,7 @@ def solution(n):
             board = newboard
             after_jail = new_after_jail
             after_two_jail = new_after_two_jail
-    return sorted(range(40), key=lambda x: board[x], reverse=True)[:3]
+    return sorted(enumerate(board), key=lambda x: x[1], reverse=True)[:3]
 
 
 from time import time
